@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        ul,li{
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        a{
+            text-decoration: none;
+        }
+        .carousel{
+            position: relative;
+            overflow: hidden; 
+            width: 300px;
+            height: 168px;
+            /*这里的高度一定要设，不然高度就没了*/
+        }
+        .carousel .img-ct{
+            position: absolute;
+            overflow: hidden;
+            /* width: 1200px; */
+            /*这个地方应该由js去计算*/
+        }
+        /*就是这里错了，我让所有li都浮动了，所以就不起效果!!! 我好恨!!! */
+        .carousel .img-ct li{
+            float: left;
+        }
+        .carousel .img-ct img{
+            width: 300px;
+            height: 168px;
+        }
+        .carousel .arrow{
+            position: absolute;
+            top: 50%;
+            margin-top: -15px;
+
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            color: #fff;
+            border: 1px solid #fff;
+            border-radius: 50%;
+            text-align: center;
+            opacity: 0.8;
+        }
+        .carousel .arrow:hover{
+            opacity: 1;
+        }
+        .carousel .pre{
+            left: 10px;
+        }
+        .carousel .next{
+            right: 10px;
+        }
+
+        .bullets{
+            position: absolute;
+            bottom: 10px;
+            z-index: 1;
+            width: 100%;
+            height: 10px;
+            text-align: center;
+            /* background-color: red; */
+            font-size: 0;
+        }
+        .bullets > li{
+            display: inline-block;
+            margin: 0 4px;
+            width: 30px;
+            height: 10px;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .bullets > li.active{
+            background-color: #ccc;
+        }
+
+        .wrapper{
+            width: 300px;
+            overflow: hidden;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="carousel">
+        <ul class="img-ct">
+            <li data-index="1"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94dcpdjwj308c04omzl.jpg" alt=""></a></li>
+            <li data-index="2"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94d7e7mtj308c04o0t3.jpg" alt=""></a></li>
+            <li data-index="3"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94cuj7nyj308c04o3yu.jpg" alt=""></a></li>
+            <li data-index="4"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94cyxdbcj308c04o74o.jpg" alt=""></a></li>
+        </ul>
+        <a href="#" class="arrow pre"><</a>
+        <a href="#" class="arrow next">></a>
+        <ul class="bullets">
+            <li class="active"></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+    <div class="carousel">
+        <ul class="img-ct">
+            <li data-index="1"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94dcpdjwj308c04omzl.jpg" alt=""></a></li>
+            <li data-index="2"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94d7e7mtj308c04o0t3.jpg" alt=""></a></li>
+            <li data-index="3"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94cuj7nyj308c04o3yu.jpg" alt=""></a></li>
+            <li data-index="4"><a href="#"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fi94cyxdbcj308c04o74o.jpg" alt=""></a></li>
+        </ul>
+        <a href="#" class="arrow pre"><</a>
+        <a href="#" class="arrow next">></a>
+        <ul class="bullets">
+            <li class="active"></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+    
+    <script src="https://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <script>
+        
+        var Carousel1 = (function($){
+            function Carousel($ct){
+                this.$ct = $ct
+                this.init()
+                this.bind()
+            }
+            Carousel.prototype = {
+                constructor:Carousel,
+                init:function(){
+                    this.$imgCt = this.$ct.find('.img-ct')
+                    this.$imgs = this.$ct.find('.img-ct>li')
+                    this.$preBtn = this.$ct.find('.pre')
+                    this.$nextBtn =this.$ct.find('.next')
+                    this.$bullets = this.$ct.find('.bullets li')
+                    this.pageIndex = 0
+                    this.isAnimate = false
+                    this.imgCount = this.$imgs.length
+                    this.imgWidth = this.$imgs.width()
+
+                    
+                    this.$imgCt.append(this.$imgs.first().clone())
+                    this.$imgCt.prepend(this.$imgs.last().clone())
+                    this.$imgCt.width((this.imgCount + 2) * this.imgWidth)
+                    this.$imgCt.css({left:-this.imgWidth})
+
+                },
+                bind:function(){
+                    var self =this
+                    this.autoPlay()
+                    this.$nextBtn.click(function(){
+                        self.playNext(1)
+                    })
+                    this.$preBtn.click(function(){
+                        self.playPre(1)
+                    })
+                    this.$bullets.on('click',function(){
+                        var index = $(this).index()
+                        if(index > self.pageIndex){
+                            self.playNext(index - self.pageIndex)
+                        }else if(index < self.pageIndex){
+                            self.playPre(self.pageIndex - index)
+                        }
+                    })
+
+                    this.$imgCt.on('mouseenter',function(){
+                        window.clearInterval(self.timerId)
+                    })
+                    this.$imgCt.on('mouseleave',function(){
+                        self.autoPlay()
+                    })
+
+                },
+                playNext:function(len){
+                    var self = this
+                    if(this.isAnimate)return;
+                    this.isAnimate = true
+                    this.$imgCt.animate({
+                        left:'-='+len * self.imgWidth 
+                    },function(){
+                        self.pageIndex += len
+                        if(self.pageIndex === self.imgCount){
+                            self.pageIndex = 0
+                            self.$imgCt.css({left:-self.imgWidth})
+                        }
+                        self.setBullet()
+                        self.isAnimate = false
+                    })
+                },
+                playPre:function(len){
+                    var self = this
+                    self.isAnimate = true
+                    this.$imgCt.animate({
+                        left:'+='+len * self.imgWidth
+                    },function(){
+                        self.pageIndex -= len
+                        if(self.pageIndex < 0){
+                            self.pageIndex = self.imgCount - 1
+                            self.$imgCt.css({left:-self.imgCount * self.imgWidth})
+                        }
+                        self.setBullet()
+                        self.isAnimate = false
+                    })
+                },
+
+                setBullet:function(){
+                    var self =this
+                    this.$bullets.removeClass('active')
+                            .eq(self.pageIndex)
+                            .addClass('active')
+                },
+                autoPlay:function(){
+                    var self = this
+                    this.timerId = setInterval(function(){
+                        self.playNext(1)
+                    },2000)
+                }
+
+            }
+            window.Carousel = Carousel
+            return {
+                Toinit:function($ct){
+                    $ct.each(function(index,node){
+                         new Carousel($(node));
+                    })
+
+                }
+            }
+        })(jQuery)
+
+        // 两种启动方式：
+
+        // Carousel1.Toinit($('.carousel')); //new出页面所有class= carousel的对象；
+
+        new Carousel($('.carousel').eq(0))
+        new Carousel($('.carousel').eq(1))
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        .ui-datapicker-wrapper{
+            position: absolute;
+            width: 240px;
+            font-size: 16px;
+            color: #888;
+            box-shadow: 2px 2px 8px rgba(128, 128, 128, 0.6);
+            border-radius: 6px;
+            display: none;
+        }
+        .show{
+            display: block;
+        }
+        /* 因为已经设置高度，所以不会受浮动的影响 */
+        .ui-datapicker-wrapper .ui-datapicker-header{
+            padding: 0 20px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ccc;
+            font-weight: bold;
+        }
+        .ui-datapicker-wrapper .ui-datapicker-btn{
+            font-family: serif;
+            font-size: 20px;
+            width: 20px;
+            height: 50px;
+            line-height: 50px;
+            color: salmon;
+            text-align: center;
+            text-decoration: none;
+        }
+        .ui-datapicker-wrapper .prev-btn{
+            float: left;
+        }
+        .ui-datapicker-wrapper .next-btn{
+            float: right;
+        }
+        .ui-datapicker-wrapper table{
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ui-datapicker-wrapper table tr{
+            border: 1px solid #f0f0f0;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        .ui-datapicker-wrapper table th,
+        .ui-datapicker-wrapper table td{
+            height: 30px;
+            text-align: center;
+        }
+        .ui-datapicker-wrapper table th:hover{
+            background-color: salmon;
+        }
+        .ui-datapicker-wrapper table td:hover{
+            background-color: aquamarine;
+        }
+        .ui-datapicker-wrapper table th{
+            font-size: 12px;
+            height: 40px;
+            line-height: 40px;
+        }
+        .datapicker{
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 5px;
+            height: 24px;
+            line-height: 24px;
+            width: 230px;
+        }
+        .datapicker:focus{
+            outline: 0 none;
+            border: 1px solid aqua;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" class="datapicker" readonly placeholder="点击选择日期">
+    <!-- <div class="ui-datapicker-wrapper"> -->
+        <!-- <div class="ui-datapicker-header">
+            <a href="#" class="ui-datapicker-btn prev-btn">&lt;</a>
+            <a href="#" class="ui-datapicker-btn next-btn">&gt;</a>
+            <span class="ui-datapicker-curr-month">2017-8</span>
+        </div>
+        <div class="ui-datapicker-body">
+            <table>
+                <thead>
+                    <tr>
+                        <th>一</th>
+                        <th>二</th>
+                        <th>三</th>
+                        <th>四</th>
+                        <th>五</th>
+                        <th>六</th>
+                        <th>七</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>29</td>
+                        <td>30</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>3</td>
+                        <td>4</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>7</td>
+                        <td>8</td>
+                        <td>9</td>
+                        <td>10</td>
+                        <td>11</td>
+                        <td>12</td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>14</td>
+                        <td>15</td>
+                        <td>16</td>
+                        <td>17</td>
+                        <td>18</td>
+                        <td>19</td>
+                    </tr>
+                    <tr>
+                        <td>20</td>
+                        <td>21</td>
+                        <td>22</td>
+                        <td>23</td>
+                        <td>24</td>
+                        <td>25</td>
+                        <td>26</td>
+                    </tr>
+                    <tr>
+                        <td>27</td>
+                        <td>28</td>
+                        <td>29</td>
+                        <td>30</td>
+                        <td>31</td>
+                        <td>1</td>
+                        <td>2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div> -->
+    <!-- </div> -->
+
+    <script>
+        !function(){
+            var datapicker = {}
+            datapicker.getMonth = function(year,month){
+                var ret = []
+                if(!year || !month){
+                    var today = new Date()
+                    var year = today.getFullYear()
+                    var month = today.getMonth() + 1 //获取真实月份
+                }
+                var firstDay = new Date(year,month-1,1)//本月第一天
+                var firstDayWeekDay = firstDay.getDay()//本月第一天是星期几
+                if(firstDayWeekDay === 0) firstDayWeekDay = 7 //将第一天中的星期天的值由0改为7
+
+                year = firstDay.getFullYear()
+                month = firstDay.getMonth() + 1
+
+                var lastDayofLastMonth = new Date(year,month-1,0) 
+                var lastDateofLastMonth = lastDayofLastMonth.getDate() //上月最后一天，比如5月最后一天是31号
+
+                var preMonthDayCount = firstDayWeekDay - 1 //若是周日，他前面需要显示6天.即是上一月的天数
+
+                var lastDay = new Date(year,month,0) //本月最后一天
+                var lastDate = lastDay.getDate() //最后一天是多少号
+
+                /*
+                日历显示上个月preMonthDayCount天，即i从0到 preMonthDayCount-1 都是上一个月的数据。
+                那么当月1号对应的i: i = preMonthDayCount-1 + 1
+                当月date号对应的i: i = preMonthDayCount-1 + date
+                */
+                for(var i=0;i<7*6;i++){
+                    var date = i + 1 -preMonthDayCount
+                    var showDate = date
+
+                    var thisMonth = month
+                    if(date <= 0){//上一月
+                        thisMonth = month - 1
+                        showDate = lastDateofLastMonth + date //31-2
+                    }else if(date > lastDate){//下一月
+                        thisMonth = month + 1
+                        showDate = showDate - lastDate  //showDate - 本月最后一天
+                    }
+                    // 因为上面的month+1 -1了，所以会出现这两个数
+                    if(thisMonth === 0) thisMonth = 12
+                    if(thisMonth === 13) thisMonth = 1
+
+                    ret.push({
+                        date:date,
+                        month:thisMonth,
+                        showDate:showDate
+                    })
+                }
+                return {
+                    year:year,
+                    month:month,
+                    days:ret
+                }
+            }
+            
+            var monthDate 
+            datapicker.buildUI = function(year,month){
+                monthDate = datapicker.getMonth(year,month)
+                var html = 
+                `
+                <div class="ui-datapicker-header">
+                    <a href="#" class="ui-datapicker-btn prev-btn">&lt;</a>
+                    <a href="#" class="ui-datapicker-btn next-btn">&gt;</a>
+                    <span class="ui-datapicker-curr-month">${monthDate.year}-${monthDate.month}</span>
+                </div>
+                <div class="ui-datapicker-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>一</th>
+                                <th>二</th>
+                                <th>三</th>
+                                <th>四</th>
+                                <th>五</th>
+                                <th>六</th>
+                                <th>七</th>
+                            </tr>
+                        </thead>
+                        <tbody>`
+                
+                for(var i=0;i<monthDate.days.length;i++){
+                    var data = monthDate.days[i]
+                    if(i % 7 === 0){
+                        html += '<tr>'
+                    }
+                    html += `<td data-date = '${data.date}'>${data.showDate}</td>`
+                    if(i % 7 === 6){
+                        html += '</tr>'
+                    }
+                }         
+                            
+                html += `</tbody>
+                    </table>
+                </div>`
+                return html
+
+            }
+            
+            
+            var $wrapper
+            datapicker.render = function(direction){
+                var year,month
+                if(monthDate){
+                    year = monthDate.year
+                    month = monthDate.month
+                }
+
+                if(direction === 'prev'){
+                    month--
+                    if(month === 0){
+                        month = 12
+                        year--
+                    }
+                }
+                if(direction === 'next') month++
+
+                var html = datapicker.buildUI(year,month)
+                if(!$wrapper){
+                    $wrapper = document.createElement('div')
+                    $wrapper.className = 'ui-datapicker-wrapper'
+                    document.body.appendChild($wrapper)
+                }
+                
+                $wrapper.innerHTML = html
+                
+            }
+            datapicker.init = function(input){
+                datapicker.render()
+
+                var $input = document.querySelector(input)
+                var isOpen = false
+                $input.addEventListener('click',function(){
+                    if(isOpen){
+                        $wrapper.classList.remove('show')
+                        isOpen = false
+                    }else{
+                        $wrapper.classList.add('show')
+                        isOpen = true
+                        var left = $input.offsetLeft
+                        var top = $input.offsetTop
+                        var height = $input.offsetHeight
+                        $wrapper.style.top = top + height + 2 + 'px'
+                        $wrapper.style.left = left + 'px'
+                    }
+                    
+                },false)
+
+                $wrapper.addEventListener('click',function(e){
+                    var target = e.target
+                    if(!target.classList.contains('ui-datapicker-btn')){
+                        return;
+                    }
+                    // 上一月
+                    if(target.classList.contains('prev-btn')){
+                        datapicker.render('prev')
+                    }
+                    // 下一月
+                    if(target.classList.contains('next-btn')){
+                        datapicker.render('next')
+                    }
+                },false)
+
+                $wrapper.addEventListener('click',function(e){
+                    var target = e.target
+                    if(target.tagName.toLowerCase() !== 'td') return
+
+                    var date = new Date(monthDate.year,monthDate.month-1,target.dataset.date)
+                   
+                    $input.value = format(date)
+                    $wrapper.classList.remove('show')
+                    isOpen = false
+                },false)
+
+            }
+
+            function format(date){
+                var ret = ''
+                ret += `${date.getFullYear()}-${padding(date.getMonth() + 1)}-${padding(date.getDate())}`
+                return ret
+            }
+            function padding(num){
+                if(num <= 9){
+                    return '0' + num
+                }
+                return num
+            }
+            window.datapicker = datapicker
+        }()
+
+        // var data = datapicker.getMonth(2016,12)
+        // console.log(data)
+        // let $ = (className) => document.querySelector(className)
+        // datapicker.init($('.ui-datapicker-wrapper'))
+        
+        datapicker.init('.datapicker')
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
+        #box{
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: aqua;
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <div id="box"></div>
+
+    <script>
+        !function(){
+            function Drag(ct){
+                this.ct = this.$(ct) //实例
+                this.startX = 0
+                this.startY = 0
+                this.sourceX = 0
+                this.sourceY = 0 
+                this.init()
+            }
+            Drag.prototype = {
+                constructor: Drag,
+                $:(className) => document.querySelector(className),
+                getCss:function(ele,attr){
+                    return window.getComputedStyle ? window.getComputedStyle(ele,false)[attr] : ele.currentStyle[attr]
+                },
+                init:function(){
+                    this.setDrag()
+                },
+                setDrag:function(){
+                    this.ct.onmousedown = down
+                    var _this = this
+                    function down(e){
+                        this.startX = e.clientX
+                        this.startY = e.clientY
+                        this.sourceX = parseFloat(_this.getCss(_this.ct,'left'))
+                        this.sourceY = parseFloat(_this.getCss(_this.ct,'top'))
+                        if(_this.ct.setCapture){//兼容ie
+                            _this.ct.setCapture();
+                            _this.ct.onmousemove = move;
+                            _this.ct.onmouseup = up;
+                        }else{
+                            document.onmousemove = function(e){
+                                // md,这里要传入实例，可是一直传的是类
+                                move.call(_this.ct,e);
+                            }
+                            document.onmouseup = function(e){
+                                up.call(_this.ct,e);
+                            }
+                        }
+                        
+                    }
+
+                    function move(e){
+                        // 这里的this是实例
+                        var curX = e.clientX
+                        var curY = e.clientY
+                
+                        var disX = curX - this.startX + this.sourceX
+                        var disY = curY - this.startY + this.sourceY
+                        disX = boundaryJudgment(this,disX,disY).disX
+                        disY = boundaryJudgment(this,disX,disY).disY
+
+                        this.style.left = disX + 'px';
+                        this.style.top = disY + 'px';
+                    }
+                    function up(){
+                        if(this.releaseCapture){
+                            this.releaseCapture();
+                            this.onmousemove = null;
+                            this.onmouseup = null;
+                        }else{
+                            document.onmousemove = null;
+                            document.onmouseup = null;
+                        }      
+                    }
+
+                }
+            }
+
+            function boundaryJudgment(ele,disX,disY){
+                var minL = 0
+                var minT = 0
+                var maxL = (document.documentElement.clientWidth || document.body.clientWidth) - ele.offsetWidth
+                var maxT = (document.documentElement.clientHeight || document.body.clientHeight) - ele.offsetHeight
+                disX =  disX < minL ? minL : (disX > maxL ? maxL : disX);
+                disY =  disY < minT ? minT : (disY > maxT ? maxT : disY);
+                return{
+                    disX:disX,
+                    disY:disY
+                }
+            }
+
+            window.Drag = Drag
+        }()
+        
+        var box = new Drag('#box')
+    </script>
+</body>
+</html>

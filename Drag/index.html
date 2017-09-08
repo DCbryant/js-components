@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        html,body{
+            width: 100%;
+            height: 100%;
+        }
+        #box{
+            /*兼容各大浏览器，但是需要知道高宽*/
+            /*position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -100px;
+            margin-top: -100px;*/
+
+            /* 还有一个transform */
+            /*ie兼容性不好，主要用于移动端开发*/
+            /*position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            margin: auto;*/
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: aqua;
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+    <div id="box"></div>
+
+    <script>
+        /*
+        拖拽的原理：
+        当鼠标在盒子上按下的时候，我们开始拖拽(给盒子绑定onmousemove和onmouseup)
+        当鼠标移动的时候。我们计算盒子的最新位置
+        当鼠标抬起的时候说明拖拽已经结束了，我们的move和up就没用了，我们再把这两个方法移除
+        */
+        
+
+        // box水平垂直居中
+        // box.style.top = ((document.documentElement.clientHeight || document.body.clientHeight) - box.offsetHeight)/2 + 'px'; 
+        // box.style.left = ((document.documentElement.clientWidth || document.body.clientWidth) - box.offsetWidth)/2 + 'px'; 
+        // console.log(box.style.top,box.style.left)
+
+        var $ = (className) => document.querySelector(className)
+        var box = $('#box')
+        var startX = 0
+        var startY = 0
+        var sourceX = 0
+        var sourceY = 0
+
+        box.onmousedown = down
+        function down(e){
+            startX = e.clientX
+            startY = e.clientY
+            console.log(startX)
+            sourceX = parseFloat(getCss(this,'left'))
+            sourceY = parseFloat(getCss(this,'top'))
+            // 在处理一个 mousedown 事件过程中调用这个方法来把全部的鼠标事件重新定向到这个元素，直到鼠标按钮被释放或者 document.releaseCapture() 被调用
+            // 处理鼠标跑的太快脱离box的bug
+            if(this.setCapture){
+                this.setCapture();
+                this.onmousemove = move;
+                this.onmouseup = up;
+            }else{
+                // 这样绑定move、up都变成document了
+                // document.onmousemove = null;
+                // document.onmouseup = null;
+                var _this = this;//this是box
+                document.onmousemove = function(e){
+                    // this -> document
+                    move.call(_this,e);
+                }
+                document.onmouseup = function(e){
+                    up.call(_this,e);
+                }
+            }
+        }
+
+        function getCss(ele,attr){
+            return window.getComputedStyle ? window.getComputedStyle(ele,false)[attr] : ele.currentStyle[attr]
+        }
+
+        function move(e){
+            var curX = e.clientX
+            var curY = e.clientY
+
+            var disX = curX - startX + sourceX
+            var disY = curY - startY + sourceY
+            
+            console.log(startX)
+            disX = boundaryJudgment(this,disX,disY).disX
+            disY = boundaryJudgment(this,disX,disY).disY
+
+            this.style.left = disX + 'px';
+            this.style.top = disY + 'px';
+        }
+        function up(){
+            if(this.releaseCapture){
+                this.releaseCapture();
+                this.onmousemove = null;
+                this.onmouseup = null;
+            }else{
+                document.onmousemove = null;
+                document.onmouseup = null;
+            }      
+        }
+        function boundaryJudgment(ele,disX,disY){
+            var minL = 0
+            var minT = 0
+            var maxL = (document.documentElement.clientWidth || document.body.clientWidth) - ele.offsetWidth
+            var maxT = (document.documentElement.clientHeight || document.body.clientHeight) - ele.offsetHeight
+            disX =  disX < minL ? minL : (disX > maxL ? maxL : disX);
+            disY =  disY < minT ? minT : (disY > maxT ? maxT : disY);
+            return{
+                disX:disX,
+                disY:disY
+            }
+        }
+
+        function getTransform() {
+            var transform = '',
+                divStyle = document.createElement('div').style,
+                transformArr = ['transform', 'webkitTransform', 'MozTransform', 'msTransform', 'OTransform'],
+
+                i = 0,
+                len = transformArr.length;
+
+            for(; i < len; i++)  {
+                if(transformArr[i] in divStyle) {
+                    return transform = transformArr[i];
+                }
+            }
+
+            return transform;
+        }
+
+    </script>
+</body>
+</html>

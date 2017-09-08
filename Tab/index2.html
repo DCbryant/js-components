@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        ul,li{
+            list-style: none;
+        }
+        a{
+            text-decoration: none;
+        }
+        body{
+            padding: 100px;
+            background-color: #323232;
+            font-size: 12px;
+            font-family: "微软雅黑";
+        }
+        .tab{
+            width: 300px;
+        }
+        .tab .tab-nav{
+            height: 30px;
+        }
+        .tab .tab-nav li{
+            float: left;
+            margin-right: 5px;
+            background-color: #767676;
+            border-radius: 5px 5px 0 0;
+        }
+        .tab .tab-nav li.active{
+            background-color: #fff;
+        }
+        .tab .tab-nav li a{
+            display: block;
+            padding: 0 20px;
+            height: 30px;
+            line-height: 30px;
+            color: #fff;
+        }
+        .tab .tab-nav li.active a{
+            color: #777;
+        }
+        .tab .tab-content{
+            padding: 5px;
+            height: 200px;
+            /* 因此这里需要显示设置高度 */
+            background-color: #fff;
+        }
+        .tab .tab-content .tab-content-item{
+            position: absolute;
+            /* fade需要设置这个 */
+            height: 200px;
+            display: none;
+        }
+        .tab .tab-content .tab-content-item>img{
+            height: 200px;
+            width: 290px;
+        }
+        .tab .tab-content .tab-content-item.current{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="js-tab tab" data-config='{
+        "triggerType":"mouseover",
+        "effect":"fade",
+        "invoke":2,
+        "auto":2000
+    }'>
+        <ul class="tab-nav">
+            <li class="active"><a href="javascript:void(0)">新闻</a></li>
+            <li><a href="javascript:void(0)">娱乐</a></li>
+            <li><a href="javascript:void(0)">电影</a></li>
+            <li><a href="javascript:void(0)">科技</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-content-item current"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fioyl4s5uaj31hc0u0ahs.jpg" alt=""></div>
+            <div class="tab-content-item"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fioyoyereaj31hc0u04qr.jpg" alt=""></div>
+            <div class="tab-content-item"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fioyl40mn2j31hc0u01kx.jpg" alt=""></div>
+            <div class="tab-content-item"><img src="https://ws1.sinaimg.cn/large/00645gvigy1fioyl2qjl6j31hc0u0tk8.jpg" alt=""></div>
+        </div>
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+    <script>
+        !(function($){
+            
+            var Tab = function(tab){
+                var _this = this
+                // 保存tab实例
+                this.tab = tab
+                // 默认配置参数
+                this.config = {
+                    'triggerType':'mouseover', //定义鼠标触发类型
+                    'effect':'default', //定义内容切换效果
+                    'invoke':1, //默认显示第几个
+                    'auto':false //用来定义tab时候为自动切换，设置了时间间隔，就表示自动切换
+                }
+
+                // 如果默认参数存在，就扩展掉默认的配置参数
+                if(this.getConfig()){
+                    $.extend(this.config,this.getConfig())
+                }
+                // 保存tab标签列表对应的内容列表
+                this.tabItems = this.tab.find('ul.tab-nav li')
+                this.contentItems = this.tab.find('div.tab-content div.tab-content-item')
+
+                // 保存配置参数
+                var config = this.config
+                if(config.triggerType === 'click'){
+                    this.tabItems.bind(config.triggerType,function(){
+                        _this.invoke($(this))
+                    })
+                }else if(config.triggerType === 'mouseover'){
+                    this.tabItems.bind('mouseover',function(){
+                        _this.invoke($(this))
+                    })
+                }else{
+                    throw new Error('请输入正确的triggerType')
+                }
+
+                // 自动切换功能，当配置了时间，我们就根据时间间隔进行自动切换
+                if(config.auto){
+                    // 全局定时器
+                    this.timer = null
+                    // 计数器
+                    this.loop = 0
+
+                    
+                    this.autoPlay()
+                    this.tab.hover(function(){
+                        clearInterval(_this.timer)
+                    },function() {
+                        _this.autoPlay()
+                    })
+                }
+
+                // 设置默认显示第几个tab
+                if(config.invoke > 1){
+                    this.invoke(this.tabItems.eq(config.invoke - 1))
+                }
+            }
+            Tab.prototype = {
+
+                // 获取配置参数
+                getConfig:function(){
+                    // 获取实例上的data-config
+                    var config = this.tab.attr('data-config')
+                    // 确保有配置参数
+                    if(config && config != ''){
+                        return $.parseJSON(config)
+                    }else{
+                        return null;
+                    }
+                },
+                // 事件驱动函数
+                invoke:function(currentTab){
+                    var _this = this
+                    /*
+                        要执行Tab的选中状态，当前选中的加上active
+                        切换对应的Tab内容，要根据配置参数的effect是default还是fade
+                    */
+                    var index = currentTab.index()
+                    currentTab.addClass('active').siblings().removeClass('active')
+                    // 切换对应的内容区域
+                    var effect = this.config.effect
+                    var contentItems = this.contentItems
+                    if(effect === 'default'){
+                        contentItems.eq(index).addClass('current').siblings().removeClass('current')
+                    }else if(effect === 'fade'){
+                        contentItems.eq(index).fadeIn().siblings().fadeOut()
+                    }else{
+                        throw new Error('请输入正确的effect')
+                    }
+
+                    //index loop 自动播放的时候应该将这个数值同步
+                    if(this.config.auto){
+                        this.loop = index
+                    }
+                },
+                // 自动间隔时间切换
+                autoPlay:function(){
+                    var _this = this
+                    var tabItems = this.tabItems
+                    var tabLength = tabItems.size()//jq高版本用length属性
+                    var config = this.config
+
+                    this.timer = setInterval(function(){
+                        _this.loop++
+                        if(_this.loop >= tabLength){
+                            _this.loop = 0
+                        }
+                        tabItems.eq(_this.loop).trigger(config.triggerType)
+                        // 模拟了this.tabItems的mouseover，由于事件冒泡会传到this.tab
+                        // 又会执行this.tab.hover里的第一个函数，把定时器给关掉
+                        // 但不会执行this.tab.hover里的第二个函数。所以跳一次就不会再跳了
+
+                        // 因此下面这一句话模拟this.tabItems的mouseout让this.tab.hover里的第二个函数执行
+                        if (config.auto) {
+                            tabItems.eq(_this.loop).trigger("mouseout");
+                        }
+                        
+                    },config.auto)
+                }
+            }
+            // 这样就不用创建多个选项卡的时候多次创建Tab这个类
+            Tab.init = function(tabs){
+                var _this = this
+                tabs.each(function(){
+                    new _this($(this))
+                })
+            }
+
+            // 注册成jquery方法
+            $.fn.extend({
+                tab:function(){
+                    // $('.js-tab')
+                    this.each(function(){
+                        new Tab($(this))
+                    })
+                    return this
+                }
+            })
+
+
+            window.Tab = Tab
+        })(jQuery)
+
+        $(function(){
+            // var tab1 = new Tab($('.js-tab').eq(0))
+            // Tab.init($('.js-tab'))
+            $('.js-tab').tab()//在Jquery上调用这个方法
+        })
+
+        // 有一个小bug，图片太大，第一次播放会出现白屏，最好时间auto设置长一点儿
+    </script>
+</body>
+</html>

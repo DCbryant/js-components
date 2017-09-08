@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        ul,li{
+            list-style: none;
+        }
+        .tab{
+            margin: 50px auto;
+            width: 800px;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 8px;
+        }
+        .tab-header{
+            border-bottom: 1px solid #eee;
+        }
+        .tab-header::after{
+            content: '';
+            display: block;
+            clear: both;
+        }
+        .tab-header > li{
+            float: left;
+            width: 33.3%;
+            padding: 10px;
+            text-align: center;
+            color: sandybrown;
+            cursor: pointer;
+            
+        }
+        .tab-header > li.active{
+            /* 本来每个li下面都有ul的一个border，现在margin-bottom，因此，那条线被向上移动1px */
+            /* 但是那个ul的border被我们的li的border所覆盖，因此现在它是白色的 */
+            /* 本来margin-bottom：1px是距离下面1x，-1px就是距离-1px */
+            margin-bottom: -1px;
+            border: 1px solid #ccc;
+            border-bottom-color: #fff;
+            border-radius: 4px 4px 0 0;
+        }
+        .tab-panels{
+            padding: 20px 0;
+            text-align: center;
+        }
+        .tab-panels > li{
+            display: none;
+        }
+        .tab-panels >li.active{
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="tab">
+        <ul class="tab-header">
+            <li class="active">1</li>
+            <li>2</li>
+            <li>3</li>
+        </ul>
+        <ul class="tab-panels">
+            <li class="active">1</li>
+            <li>2</li>
+            <li>3</li>
+        </ul>
+    </div>
+
+
+    <script>
+        let $ = (className) => document.querySelector(className)
+        let $$ = (className) => document.querySelectorAll(className)
+
+        var tab_header = $('.tab-header')
+        var tab_header_lis = $$('.tab-header > li')
+        var tab_panels_lis = $$('.tab-panels > li')
+        
+        tab_header.addEventListener('click',function(e){
+            var target = e.target
+            if(target.tagName.toLowerCase() === 'li'){
+                for(var i=0;i<tab_header_lis.length;i++){
+                    tab_header_lis[i].classList.remove('active')
+                }
+                target.classList.add('active')
+
+                var index = [].indexOf.call(tab_header_lis,target)
+                for(var j=0;j<tab_panels_lis.length;j++){
+                    tab_panels_lis[j].classList.remove('active')
+                }
+                tab_panels_lis[index].classList.add('active')
+            }
+        })
+    </script>
+</body>
+</html>

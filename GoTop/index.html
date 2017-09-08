@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            font-family: "\5FAE\8F6F\96C5\9ED1", Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            -webkit-user-select: none;
+        }
+        html,body{
+            width: 100%;
+            height: 500%;
+            background: #11c900;
+            background: -webkit-linear-gradient(top,#11c900,lightblue,lightcoral,lightcyan,lightgoldenrodyellow,lightgreen,lightpink,lightsalmon,lightseagreen);
+        }
+        a{
+            text-decoration: none;
+            color: #000;
+        }
+        a:hover,a:active,a:target,a:visited{
+            text-decoration: none;
+            color: #000;
+        }
+        #goLink{
+            display: none;
+            position: fixed;
+            bottom: 200px;
+            right: 50px;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background: red;
+            border-radius: 50%;
+            opacity: 0.5;
+            filter: alpha(opacity=50);
+        }
+        #goLink:hover{
+            opacity: 1;
+            filter: alpha(opacity=100);
+        }
+    </style>
+</head>
+<body>
+    
+    
+    <a href="javascript:;" id="goLink">Go</a>
+    <script>
+        var goLink = document.getElementById('goLink');
+        // 开始go按钮是不显示的,只有当浏览器卷去的高度超过一屏幕的高度的时候再显示，反之隐藏
+        // 只要滚动条在滚动，我们就要判断GO显示还是隐藏
+        // 浏览器的滚动条滚动：拖动滚动条、鼠标滚轮、键盘上下键、pgdn pgup键、点击滚动条的空白处或者箭头(人为自主操作行为)
+        //                   我们还可以通过scrollTop的值实现滚动条的滚动(js代码)
+    
+        // 不管怎么操作的，只要滚动条滚动了就会触发这个行为
+        window.onscroll = computedDisplay;
+        
+        function computedDisplay(){
+            var curTop = document.documentElement.scrollTop || document.body.scrollTop;
+            var curHeight = document.documentElement.clientHeight || document.body.clientHeight;
+            goLink.style.display = curTop > curHeight ? "block" : "none";
+        }
+    
+    
+        goLink.onclick = function(){
+            // 当我点击的时候，让当前的GO消失
+            this.style.display = "none";
+            //光这样还不行，我们往回走的时候又把 window.onscroll触发了,让GO又显示了
+            // 点击的时候不让他触发，点击的时候把绑定事件给取消了
+            window.onscroll = null;
+    
+            var duration = 500,
+            interval = 10,
+            target = document.documentElement.scrollTop || document.body.scrollTop;
+            step = (target/duration)*interval;
+           
+            var timer = window.setInterval(function(){
+                var curTop = document.documentElement.scrollTop || document.body.scrollTop;
+                if(curTop === 0){
+                    window.clearInterval(timer);
+                    window.onscroll = computedDisplay;//当动画结束后还需把对应的方法重新绑定给window.onscroll
+                    return;
+                }
+                curTop -= step;
+                document.documentElement.scrollTop = curTop;
+                document.body.scrollTop = curTop;
+            },interval)
+        
+        }
+    </script>
+</body>
+</html>
