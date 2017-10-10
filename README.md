@@ -16,5 +16,5 @@
 
 [Drag](https://dcbryant.github.io/js-components/Drag/index1.html)
 
-[Music](https://dcbryant.github.io/js-components/Music/music.html)
+[Music](https://dcbryant.github.io/js-components/music/music.html)
 
