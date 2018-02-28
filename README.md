@@ -18,3 +18,6 @@
 
 [Music](https://dcbryant.github.io/js-components/music/music.html)
 
+
+使用js或jQuery利用面向对象的思想实现的ui组件，基本实现是先实现其基本功能，然后利用面向对象思想将其封装成一个组件
+
